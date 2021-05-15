@@ -1,0 +1,14 @@
+How to get started
+1.Start the virtual environment,  '. venv/bin/activate'
+2.Install the necessary packages, 'pip install -r requirements.txt'
+3.Modify backers_url list  in index file, e.g. 'backers_url[70:90]''
+4.Modify output file to json in index file, e.g. 'data/data30_2.json'
+
+Data filename format
+-data_[batch size]_[iteration no]
+-Modify this filename  in index file under output file to json
+
+Index of backers_urls that have been crawled
+0-20
+21-40
+40-70

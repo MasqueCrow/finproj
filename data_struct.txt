@@ -1,0 +1,6 @@
+Data structure in data.json
+[
+	( {backer_info} , [ {project1},project2}, project3} ] )
+	( {backer_info} , [ {project1},project2}, project3} ] )
+	( {backer_info} , [ {project1},project2}, project3} ] )
+]

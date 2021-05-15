@@ -99,7 +99,7 @@ try:
         chrome_options.add_argument("window-size=1280,800")
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
 
-        
+
         #chrome_options.add_argument('--proxy-server={}'.format(proxies[i]))
         i += 1
 
@@ -268,7 +268,7 @@ try:
 
 
     #ouput file to json
-    with open ('data30_1.json','w') as outfile:
+    with open ('data/data30_2.json','w') as outfile:
         json.dump(backer_list,outfile)
 
 finally:

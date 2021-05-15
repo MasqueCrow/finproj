@@ -12,7 +12,7 @@ import random
 import pprint as pprint
 import re
 import json
-
+import sys
 
 def retrieve_html(driver,BeautifulSoup):
     html = driver.page_source
@@ -56,12 +56,12 @@ def rand_user_agent(random):
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0',
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36',
     ]
+
     return random.choice(user_agent_list)
 
 #store backers urls
 with open('backer_list.pickle','rb') as f:
     backer_urls = pkl.load(f)
-
 
 
 proxies = []
@@ -81,7 +81,12 @@ test_url = ['https://www.kickstarter.com/profile/jamesvanosdol','https://www.kic
 
 backer_list = []
 
-backer_urls = backer_urls[40:71]
+#Receive inputs to modify list and output file
+start_idx = int(input("Start index for backers_urls: "))
+end_idx = int(input("End index for backers_urls: "))
+data_output = input("Batch_size and iteration_no, e.g 30_2: ")
+
+backer_urls = backer_urls[start_idx:end_idx]
 pprint.pprint(backer_urls)
 
 try:
@@ -265,13 +270,11 @@ try:
 
         #Exit chrome driver
         driver.quit()
-
-
-    #ouput file to json
-    with open ('data/data30_2.json','w') as outfile:
+    with open ('data/data'+ data_output +'.json','w') as outfile:
         json.dump(backer_list,outfile)
 
 finally:
     pprint.pprint(backer_list)
     print("Crawling completed")
     print("Elapsed time: {0:.2f}".format(time.time() - start_time),"secs")
+    #ouput file to json

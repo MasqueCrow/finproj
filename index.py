@@ -146,6 +146,7 @@ try:
 
             backer_info.update({'biography': bio})
             backer_info.update({'websites': websites})
+            backer_info.update({'url_link':url})
         except AttributeError:
             pass
 

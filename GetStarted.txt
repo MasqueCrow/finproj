@@ -9,7 +9,7 @@ Data filename format
 
 Index of backers_urls that have been crawled
 0-20
-21-40
+20-40
 40-70
 70-100
 100-130
@@ -22,3 +22,8 @@ Index of backers_urls that have been crawled
 280-300
 300-330
 330-360
+360-390
+390-420
+420-450
+450-480
+480-510

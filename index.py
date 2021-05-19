@@ -102,8 +102,6 @@ try:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_argument("window-size=1280,800")
-        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
-
 
         #chrome_options.add_argument('--proxy-server={}'.format(proxies[i]))
         i += 1
@@ -154,7 +152,7 @@ try:
         ##crawl Backed webpage##
         backed_link = driver.find_element_by_partial_link_text('Backed')
         backed_link.click()
-        time.sleep(7)
+        #time.sleep(7)
 
         #pause every x seconds after scrolling to btm of webpage
         SCROLL_PAUSE_TIME = random.randint(5,8)
@@ -175,11 +173,11 @@ try:
                 break
             last_height = new_height
 
+
         #Retrieve complete html page after infinite scroll
         soup = retrieve_html(driver,BeautifulSoup)
 
-        #backer's info
-
+        #Backer's info
         try:
             name = soup.find("h2", class_="mb2").text.strip()
             backed = soup.find("span", class_="backed").text.strip()
@@ -193,77 +191,14 @@ try:
         backer_info.update({'location': loc})
         backer_info.update({'joined_date': join})
 
-        #Retrieve projects elements
-        projects = soup.find_all('div', attrs={'class':'js-track-project-card'})
+        #Collect projects data from fully loaded page
+        projects = soup.find_all('div', attrs={'class':'react-user-prof-card grid-col-12 grid-col-6-sm grid-col-4-lg'})
+
         project_list = []
-
         for project in projects:
-            btm_info = {}
-            top_info = {}
-            #treatment for successful/unsuccessfull campaign
-            try:
-                project_top_div = project.find('div',class_='navy-500')
-                project_link = project_top_div.find_all("a",href=True)[0]['href']
-                title = project_top_div.find('h3').text
-                content = project_top_div.select('p',_class='support-400 type-14 text-decoration-none clamp-2')[0].text
-                top_info.update({'title' : title})
-                top_info.update({'content' : content})
-                top_info.update({'project_link' : project_link})
+            project_list.append(project["data-project"])
 
-                project_btm_div = project.find('div',class_='pb5-md')
-                find_creator_link = project_btm_div.find_all("a",href=True)
-
-                #check for any links which indicates campaign success
-                if len(find_creator_link) > 0:
-                    creator_link = ""
-                    creator_link = find_creator_link[0]['href']
-                    backers = project_btm_div.select('div.soft-black.text-ellipsis')[0].text
-                    btm_info.update({'creator_link' : creator_link})
-                    btm_info.update({'backers' : backers})
-                else:
-                    #retrieve info of unuccessful campaign
-                    btm_section = project_btm_div.select('div.inline-block.mt4px')[0].text.lower()
-                    substring_1 = 'funding unsuccessful'
-                    substring_2 = 'funding canceled'
-                    project_end_date_info = ''
-                    project_fail_status = ''
-
-                    #seperate project fail status and date info in string
-                    if substring_1 in btm_section:
-                        project_fail_status = substring_1
-                        project_end_date_info = btm_section[len(substring_1):]
-                    elif substring_2 in btm_section:
-                        project_fail_status = substring_2
-                        project_end_date_info = btm_section[len(substring_2):]
-
-                    btm_info.update({'project_fail_status' : project_fail_status})
-                    btm_info.update({'project_end_date' : project_end_date_info})
-
-            #treatment for suspended camapign
-            except AttributeError:
-                title = project.select('h3.type-18.light.hover-item-text-underline.mb1')[0].text
-                content = project.select('p.support-400.type-14.text-decoration-none.clamp-2')[0].text
-                project_link = project.find('a',{'class':'soft-black mb3'})['href']
-
-                top_info.update({'title' : title})
-                top_info.update({'content' : content})
-                top_info.update({'project_link' : project_link})
-
-                creator_link = project.find('a',{'class':'soft-black hover-text-underline medium'})['href']
-                pledged_amt = project.find('span',{'data-test-id':'amount-pledged'}).text
-                fund_percentage = project.select('div.type-13.mr2.dark-grey-500.medium')[0].text
-                project_category = project.find('a',{'class':'dark-grey-500 hover-soft-black text-underline type-13 medium'}).text
-                project_location = project.find('a',{'class':'dark-grey-500 hover-soft-black text-underline type-13 medium ml4'}).text
-
-                btm_info.update({'creator_link' : creator_link})
-                btm_info.update({'pledged_amt' : pledged_amt})
-                btm_info.update({'fund_percentage' : fund_percentage})
-                btm_info.update({'project_category' : project_category})
-                btm_info.update({'project_location' : project_location})
-
-            #merge dicts info to project dict
-            project = {**top_info,**btm_info}
-            project_list.append(project)
+        print("Number of Backer's project found:",len(project_list))
 
         backer_list.append((backer_info,project_list))
 
@@ -271,6 +206,8 @@ try:
 
         #Exit chrome driver
         driver.quit()
+
+    #ouput file to json
     with open ('data/data'+ data_output +'.json','w') as outfile:
         json.dump(backer_list,outfile)
 
@@ -278,4 +215,3 @@ finally:
     pprint.pprint(backer_list)
     print("Crawling completed")
     print("Elapsed time: {0:.2f}".format(time.time() - start_time),"secs")
-    #ouput file to json

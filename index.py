@@ -88,7 +88,7 @@ data_output = input("Batch_size and iteration_no, e.g 30_2: ")
 
 backer_urls = backer_urls[start_idx:end_idx]
 pprint.pprint(backer_urls)
-
+total_project_crawled = 0
 try:
     start_time = time.time()
     for url in backer_urls:
@@ -148,11 +148,10 @@ try:
         except AttributeError:
             pass
 
-
         ##crawl Backed webpage##
         backed_link = driver.find_element_by_partial_link_text('Backed')
         backed_link.click()
-        #time.sleep(7)
+        time.sleep(9)
 
         #pause every x seconds after scrolling to btm of webpage
         SCROLL_PAUSE_TIME = random.randint(5,8)
@@ -173,9 +172,14 @@ try:
                 break
             last_height = new_height
 
-
         #Retrieve complete html page after infinite scroll
         soup = retrieve_html(driver,BeautifulSoup)
+
+        #initialise variables
+        name = ""
+        backed = ""
+        loc = ""
+        join = ""
 
         #Backer's info
         try:
@@ -184,7 +188,7 @@ try:
             loc = soup.find("span", class_="location").text.strip()
             join = soup.find("span", class_="joined").text.strip()
         except AttributeError:
-            continue
+            pass
 
         backer_info.update({'name': name})
         backer_info.update({'no_of_backed_proj': backed})
@@ -198,7 +202,7 @@ try:
         for project in projects:
             project_list.append(project["data-project"])
 
-        print("Number of Backer's project found:",len(project_list))
+        total_project_crawled += len(project_list)
 
         backer_list.append((backer_info,project_list))
 
@@ -212,6 +216,7 @@ try:
         json.dump(backer_list,outfile)
 
 finally:
-    pprint.pprint(backer_list)
     print("Crawling completed")
     print("Elapsed time: {0:.2f}".format(time.time() - start_time),"secs")
+    print("Number of backers crawled:",len(backer_list))
+    print("Number of Backer's project found:",total_project_crawled)

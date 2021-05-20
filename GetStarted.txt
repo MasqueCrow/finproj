@@ -10,3 +10,6 @@ Data filename format
 Index of backers_urls that have been crawled
 0-20
 20-40
+40-70
+
+Total backers: 764

@@ -151,7 +151,7 @@ try:
         ##crawl Backed webpage##
         backed_link = driver.find_element_by_partial_link_text('Backed')
         backed_link.click()
-        time.sleep(9)
+        time.sleep(random.randint(10,12))
 
         #pause every x seconds after scrolling to btm of webpage
         SCROLL_PAUSE_TIME = random.randint(5,8)
@@ -171,6 +171,7 @@ try:
             if new_height == last_height:
                 break
             last_height = new_height
+
 
         #Retrieve complete html page after infinite scroll
         soup = retrieve_html(driver,BeautifulSoup)
@@ -214,6 +215,10 @@ try:
     #ouput file to json
     with open ('data/data'+ data_output +'.json','w') as outfile:
         json.dump(backer_list,outfile)
+
+    #output crawled progress
+    with open('data/data_progress.txt','a') as f:
+        f.write(data_output+".json"+":"+str(start_idx) + "-" + str(end_idx)+ "\n")
 
 finally:
     print("Crawling completed")

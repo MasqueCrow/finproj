@@ -60,9 +60,10 @@ def backers_projects(json_files):
 
     for json_file in json_files:
         for backer in json_file:
-            backer_name = backer[0]['name']
+            backer_name = backer[0]
             projects = backer[1]
             project_urls = []
+
 
             #iterate thru each backer's projects
             for project in projects:
@@ -100,14 +101,20 @@ def create_driver(webdriver,Options):
 
 
 try:
+    start_time = time.time()
+    output_data = []
     #Loop thru all projects urls
     for backer_project in backers_projects_urls:
+        backer_name = backer_project[0]['name']
         project_urls = backer_project[1]
+        iter = 0
 
         for project_url in project_urls:
+
             driver = create_driver(webdriver,Options)
-            #driver.get(project_url)
-            driver.get('https://www.kickstarter.com/projects/fowers/paperback-adventures-a-novel-solo-word-game/description')
+            driver.get(project_url)
+            print(project_url)
+            #driver.get('https://www.kickstarter.com/projects/fowers/paperback-adventures-a-novel-solo-word-game/description')
             soup = retrieve_html(driver,BeautifulSoup)
             time.sleep(2)
 
@@ -137,7 +144,7 @@ try:
                 env_commit_content = driver.find_element_by_id('environmentalCommitments').text
                 #print(env_commit_content)
             except NoSuchElementException:
-                print("envrionmental_commitment element not found.")
+                print("environmental_commitment element not found.")
 
             #Creator bio content
             try:
@@ -191,8 +198,6 @@ try:
                     elif len(tmp_list) == 4:
                         time_list.append([{tmp_list[0]:tmp_list[1]},{tmp_list[2]:tmp_list[3]}])
 
-                #print(time_list)
-                #print("time",len(time_list))
             except NoSuchElementException:
                 print("pledge_time_tree element not found.")
 
@@ -235,7 +240,7 @@ try:
                 for status in project_status:
                     status = status.text.split('\n')
                     status_list.append({status[0]:status[1]})
-                print(status_list)
+                #print(status_list)
             except NoSuchElementException:
                 print("project status element not found.")
 
@@ -245,7 +250,7 @@ try:
                 update_no_list = []
                 for update in update_no_tree:
                     update_no_list.append(update.text)
-                print(update_no_list)
+                #print(update_no_list)
             except NoSuchElementException:
                 print("update_no element not found.")
 
@@ -255,7 +260,7 @@ try:
                 update_title_list = []
                 for update_title in update_title_tree:
                     update_title_list.append(update_title.text)
-                print(update_title_list)
+                #print(update_title_list)
             except NoSuchElementException:
                 print("update_title_tree element not found.")
 
@@ -277,13 +282,11 @@ try:
                     name = ''
                     status = ''
 
-                    print(temp_info_list)
                     if 'Creator' in name_status:
                         name_status = name_status.partition('Creator')
                         name = name_status[0]
                         status = name_status[1]
                     elif 'Collaborator' in name_status:
-
                         name_status = name_status.partition('Collaborator')
                         name = name_status[0]
                         status = name_status[1]
@@ -299,13 +302,13 @@ try:
                 update_content_list = []
                 for content in content_tree:
                     update_content_list.append(content.text)
-                print(update_content_list)
-                print(len(update_content_list))
+                #print(update_content_list)
+                #print(len(update_content_list))
             except NoSuchElementException:
                 print("content_tree element not found.")
 
-            #To continue:add supdate formatted data into a list
-            print("status:",len(status_list),'update_no:',len(update_no_list),'update_title:',len(update_title_list),'update_userinfo:',len(update_userinfo_list),'update_content:',len(update_content_list))
+
+            #print("status:",len(status_list),'update_no:',len(update_no_list),'update_title:',len(update_title_list),'update_userinfo:',len(update_userinfo_list),'update_content:',len(update_content_list))
             update_list = []
             for update_no, update_title,update_userinfo,update_content in zip(update_no_list,update_userinfo_list,update_title_list,update_content_list):
                 update_dict = {}
@@ -319,43 +322,118 @@ try:
             pprint.pprint(update_list)
             print(len(update_list))
 
-            #to continue for comments..
-            break
-            #driver.quit()
+            ###comments section###
+            try:
+                comment_link = driver.find_element_by_partial_link_text('Comments')
+                comment_link.click()
+                time.sleep(4)
+            except NoSuchElementException:
+                print("comment link not found")
+
+            #Load full page implementation
+            SCROLL_PAUSE_TIME = random.randint(5,8)
+            # Get scroll height
+            last_height = driver.execute_script("return document.body.scrollHeight")
+            while True:
+                # Scroll down to bottom
+                driver.execute_script("window.scrollTo(0, 500);")
+                try:
+                    #find load more btn element
+                    driver.find_element_by_xpath('/html/body/main/div/div/div[2]/section[7]/div/div/div/div[2]/div/div/button').click()
+                    #pause every x seconds after scrolling to btm of webpage
+                    SCROLL_PAUSE_TIME = random.randint(5,8)
+                    time.sleep(SCROLL_PAUSE_TIME)
+                except NoSuchElementException:
+                    #Reaches the end of the line
+                    print("Comments page fully loaded")
+                    break
+
+            ###Retrieve comment content###
+            usernames = []
+            contents = []
+            time_list = []
+            try:
+                comm_tree = driver.find_elements_by_css_selector('li.mb2')
+                print(len(comm_tree))
+
+                for elem in comm_tree:
+                    try:
+                        creator_collaborator = elem.find_element_by_css_selector('span.type-14.mr1').text
+                        #Retrieve superbacker info
+                        if creator_collaborator == 'Superbacker':
+                            username = elem.find_element_by_css_selector('span.mr2').text
+                            content = elem.find_element_by_css_selector('p.type-14.mb0').text
+                            post_time = elem.find_element_by_css_selector('time.block.dark-grey-400.type-12').text
+                            usernames.append(username)
+                            contents.append(content)
+                            time_list.append(post_time)
+
+                    except NoSuchElementException:
+                        #creator/collaborator cannot be found
+
+                        #Retrieve usernames
+                        try:
+                            #Retrieve users who are not creator/collaborator
+                            username = elem.find_element_by_css_selector('span.mr2').text
+                            usernames.append(username)
+                            #print(username.text,i)
+                        except NoSuchElementException:
+                            continue
+                            #print("username cannot be found")
+
+                        #Retrieve content
+                        try:
+                            content = elem.find_element_by_css_selector('p.type-14.mb0').text
+                            contents.append(content)
+                        except NoSuchElementException:
+                            continue
+                            #print("content cannot be found")
+
+                        #Retrieve timestamp
+                        try:
+                            post_time = elem.find_element_by_css_selector('time.block.dark-grey-400.type-12').text
+                            time_list.append(post_time)
+                        except NoSuchElementException:
+                            continue
+
+                comments_list = []
+                for username,content,post_time in zip(usernames,contents,time_list):
+                    comment_dict = {}
+                    comment_dict['username'] = username
+                    comment_dict['content'] = content
+                    comment_dict['time'] = post_time
+                    comments_list.append(comment_dict)
+
+            except NoSuchElementException:
+                print('li elements cannot be found')
+
+            #Consolidate data per website crawl
+            consolidated_data = {'campaign':campaign_data,'support':support_list,'updates':update_list,'comments':comments_list}
+            print("===Webpage Consolidated Data===")
+            pprint.pprint(consolidated_data)
+            output_data.append({'backer':backer_name,'project_data':consolidated_data})
+
+            print("iter:",iter)
+            iter+= 1
+
+            if iter == 20:
+                break
+            time.sleep(4)
+            driver.quit()
 
         break
 
+    print("========================================================")
+    pprint.pprint(output_data)
+    print("length of output_data",len(output_data))
 
-    #test_url = backer_project[0][1][0]
-    #page = requests.get(test_url)
+    #ouput file to json
+    with open('new_data/data.json','w') as outfile:
+        json.dump(output_data,outfile)
 
-    '''
-    if page.status_code == 200:
-        soup = BeautifulSoup(page.content, 'html5lib')
-        story = soup.find("section", class_="js-project-content js-project-description-content project-content")
-        print(story.prettify())
-
-
-    '''
-    #driver = webdriver.Chrome(executable_path="./chromedriver",options=chrome_options)
-    #driver.get(test_url)
-    #soup = retrieve_html(driver,BeautifulSoup)
-    #story = soup.find("div", class_="rte__content")
-    #print(story)
-    #driver.quit()
-
-    #community_link = driver.find_element_by_link_text('Community')
-    #community_link.click()
-        #driver.get(test_url)
-
-    #driver.quit()
-
-    '''
-    for url in backer_urls:
-        driver.get(url)
-        soup = retrieve_html(driver,BeautifulSoup)
-        print(soup)
-        break
-    '''
 except Exception as e:
     print(e)
+
+finally:
+    print("Crawling completed")
+    print("Elapsed time: {0:.2f}".format(time.time() - start_time),"secs")

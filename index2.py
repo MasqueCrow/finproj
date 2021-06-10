@@ -99,22 +99,37 @@ def create_driver(webdriver,Options):
     driver = webdriver.Chrome(executable_path="./chromedriver",options=chrome_options)
     return driver
 
+def output_backer_project(output_data,backer_name,no_website_crawled,batch_no):
+    #ouput file to json
+    with open('new_data/'+ backer_name +"_projects"+'_'+str(no_website_crawled)+'-'+str(batch_no) +'.json','w') as outfile:
+        json.dump(output_data,outfile)
+    print("========================================================")
+    print("Backer:",backer_name)
+    print("No. of projects",len(output_data))
+
+#backers_projects_urls
+start = int(input("Starting backer range:"))
+end = int(input("Ending backer range:"))
 
 try:
     start_time = time.time()
-    output_data = []
+    num_backer_crawled = 0
+    batch_size = 50
     #Loop thru all projects urls
-    for backer_project in backers_projects_urls:
-        backer_name = backer_project[0]['name']
-        project_urls = backer_project[1]
-        iter = 0
+    for i in range(start,end):
+        no_of_website = 0
+        batch_no = 0
+        num_backer_crawled += 1
+        num_skip_website = 0
+        backer_name = backers_projects_urls[i][0]['name']
+        project_urls = backers_projects_urls[i][1]
+        output_data = []
 
         for project_url in project_urls:
-
             driver = create_driver(webdriver,Options)
             driver.get(project_url)
             print(project_url)
-            #driver.get('https://www.kickstarter.com/projects/fowers/paperback-adventures-a-novel-solo-word-game/description')
+            #driver.get('https://www.kickstarter.com/projects/blacklistgames/blacklist-miniatures-fantasy-series-1')
             soup = retrieve_html(driver,BeautifulSoup)
             time.sleep(2)
 
@@ -229,7 +244,7 @@ try:
             try:
                 update_link = driver.find_element_by_partial_link_text('Updates')
                 update_link.click()
-                time.sleep(4)
+                time.sleep(random.randint(4,6))
             except NoSuchElementException:
                 print("update link not found")
 
@@ -320,7 +335,7 @@ try:
             #include project status, i.e. project launched or project end
             update_list.append({'status':status_list})
             pprint.pprint(update_list)
-            print(len(update_list))
+            print("update_list:",len(update_list))
 
             ###comments section###
             try:
@@ -330,10 +345,26 @@ try:
             except NoSuchElementException:
                 print("comment link not found")
 
+            #Find no. of comments for project
+            try:
+                comment_data = driver.find_element_by_xpath('//*[@id="comments-emoji"]/span/data')
+                comment_no = int(comment_data.get_attribute('data-value'))
+                #Skip crawling data for website with more than 1000 comments
+                #selenium would crash
+                if comment_no > 1000:
+                    print("Website skipped")
+                    num_skip_website+=1
+                    time.sleep(random.randint(4,6))
+                    driver.quit()
+                    continue
+            except NoSuchElementException:
+                print("No. of comments cannot be found")
+
             #Load full page implementation
             SCROLL_PAUSE_TIME = random.randint(5,8)
             # Get scroll height
             last_height = driver.execute_script("return document.body.scrollHeight")
+
             while True:
                 # Scroll down to bottom
                 driver.execute_script("window.scrollTo(0, 500);")
@@ -354,7 +385,7 @@ try:
             time_list = []
             try:
                 comm_tree = driver.find_elements_by_css_selector('li.mb2')
-                print(len(comm_tree))
+                print("comm_tree:",len(comm_tree))
 
                 for elem in comm_tree:
                     try:
@@ -409,27 +440,66 @@ try:
 
             #Consolidate data per website crawl
             consolidated_data = {'campaign':campaign_data,'support':support_list,'updates':update_list,'comments':comments_list}
-            print("===Webpage Consolidated Data===")
+            print("===WebSite Data Crawled===")
             pprint.pprint(consolidated_data)
             output_data.append({'backer':backer_name,'project_data':consolidated_data})
 
-            print("iter:",iter)
-            iter+= 1
 
-            if iter == 20:
-                break
-            time.sleep(4)
+            no_of_website += 1
+            print("Website_no:",no_of_website)
+            print("No. of websites to crawl:", len(project_urls))
+            print("num_skip_website:",num_skip_website)
+
+            #discount skipped websites
+            num_website_left_to_scraped = len(project_urls) - num_skip_website
+            print("no_of_website:",no_of_website,"num_website_left_to_scraped:",num_website_left_to_scraped)
+
+            if no_of_website % batch_size == 0:
+                batch_no += 1
+                output_backer_project(output_data,backer_name,batch_size,batch_no)
+
+            elif no_of_website == num_website_left_to_scraped:
+                batch_remainder = num_website_left_to_scraped % batch_size
+                batch_no += 1
+                output_backer_project(output_data,backer_name,batch_remainder,batch_no)
+
+
+
+            '''
+            #discount skipped websites
+            num_website_left_to_scraped = len(project_url) - num_skip_website
+
+            #output data of backer after crawling 50 websites
+            if (no_of_website % batch_size) == 0:
+                batch_no += 1
+                output_backer_project(output_data,backer_name,batch_size,batch_no)
+
+            #output data of backer for last batch X websites
+            elif (num_website_left_to_scraped - no_of_website ) == (num_website_left_to_scraped % batch_size):
+                batch_no += 1
+                #last batch of remaining website
+                last_batch = len(project_url) % batch_size
+                output_backer_project(output_data,backer_name,last_batch,batch_no)
+
+            #cover cornercase for website < 50, e.g. 20
+            elif (num_website_left_to_scraped < batch_size) and no_of_website == num_website_left_to_scraped:
+                batch_no += 1
+                output_backer_project(output_data,backer_name,len(project_url),batch_no)
+            '''
+
+
+            #if no_of_website == 20:
+            #    break
+            time.sleep(random.randint(4,6))
             driver.quit()
 
-        break
 
-    print("========================================================")
-    pprint.pprint(output_data)
-    print("length of output_data",len(output_data))
+        #output_backer_project(output_data,backer_name)
 
-    #ouput file to json
-    with open('new_data/data.json','w') as outfile:
-        json.dump(output_data,outfile)
+
+        print("backers crawled:",str(num_backer_crawled))
+        print("Num website skipped:", num_skip_website)
+        print("Total website crawled:", (len(project_urls) - num_skip_website))
 
 except Exception as e:
     print(e)

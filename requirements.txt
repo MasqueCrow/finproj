@@ -7,9 +7,11 @@ configparser==5.0.2
 crayons==0.4.0
 cryptography==3.4.7
 fake-useragent==0.1.11
+html5lib==1.1
 httmock==1.4.0
 http-request-randomizer==1.3.2
 idna==2.10
+lxml==4.6.3
 psutil==5.8.0
 pycparser==2.20
 pyOpenSSL==20.0.1
@@ -20,3 +22,5 @@ six==1.16.0
 soupsieve==2.2.1
 urllib3==1.26.4
 webdriver-manager==3.4.1
+webencodings==0.5.1
+xvfbwrapper==0.2.9

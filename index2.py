@@ -137,6 +137,7 @@ try:
         num_skip_website = 0
         project_name_index  = 0
 
+        #Previous crawled data info
         backer_name = backers_projects_urls[i][0]['name']
         project_urls = backers_projects_urls[i][1]
         project_names = backers_projects_urls[i][2]
@@ -370,17 +371,11 @@ try:
             try:
                 comment_data = driver.find_element_by_xpath('//*[@id="comments-emoji"]/span/data')
                 comment_no = int(comment_data.get_attribute('data-value'))
-                #Skip crawling data for website with more than 1000 comments
-                #selenium would crash
-                if comment_no > 1000:
-                    print("Website skipped")
-                    num_skip_website+=1
-                    time.sleep(random.randint(4,6))
-                    driver.quit()
-                    continue
+
             except NoSuchElementException:
                 print("No. of comments cannot be found")
 
+            '''
             #Load full page implementation
             SCROLL_PAUSE_TIME = random.randint(5,8)
             # Get scroll height
@@ -458,13 +453,14 @@ try:
 
             except NoSuchElementException:
                 print('li elements cannot be found')
+            '''
 
             #Consolidate data per website crawl
-            consolidated_data = {'campaign':campaign_data,'support':support_list,'updates':update_list,'comments':comments_list}
+            consolidated_data = {'campaign':campaign_data,'support':support_list,'updates':update_list,'comment_no':comment_no,'projec_url': project_url,'project_name':project_name}
             print("===WebSite Data Crawled===")
             pprint.pprint(consolidated_data)
+            print("Currently crawled backer index:",i)
             output_data.append({'backer':backer_name,'project_data':consolidated_data})
-
 
             no_of_website += 1
             print("Website_no:",no_of_website)
@@ -486,11 +482,8 @@ try:
 
             project_name_index += 1
 
-            #if no_of_website == 20:
-            #    break
             time.sleep(random.randint(4,6))
             driver.quit()
-
 
         #output_backer_project(output_data,backer_name)
 

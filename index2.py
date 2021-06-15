@@ -50,31 +50,45 @@ def load_json_files(filenames):
         except FileNotFoundError:
             print("File not found.")
     print("Loading json files completed.")
+    print(len(json_files),"json files loaded.")
     return json_files
 
 #Store backers with its associated project urls
 #e.g. [backer,[project1,project2...projectn]]
 def backers_projects(json_files):
+    #[(backer_data,[urls],[proj_name]), (bdata,[urls],[proj_name])...]
     backers_projects = []
     print("Retrieving backer and their backed projects...")
+    total_project_urls = []
 
     for json_file in json_files:
         for backer in json_file:
-            backer_name = backer[0]
+            backer_data = backer[0]
             projects = backer[1]
             project_urls = []
-
+            project_names = []
 
             #iterate thru each backer's projects
             for project in projects:
                 project_url = ""
+                project_name = ""
+
                 project = json.loads(project)
                 project_url = project['urls']['web']['project']
-                project_urls.append(project_url)
+                project_name = project['name']
 
-            backers_projects.append((backer_name,project_urls))
+                project_urls.append(project_url)
+                project_names.append(project_name)
+
+                total_project_urls.append(project_url)
+
+            backers_projects.append((backer_data,project_urls,project_names))
     #pprint.pprint(backers_projects)
+    print("Total no. of project urls:",len(total_project_urls))
     print("Total number of backers with projects:",str(len(backers_projects)))
+    #pprint.pprint(total_project_urls)
+    print("Total unique no. of project urls:",len(set(total_project_urls)))
+
     return backers_projects
 
 #initialise variables
@@ -121,11 +135,18 @@ try:
         batch_no = 0
         num_backer_crawled += 1
         num_skip_website = 0
+        project_name_index  = 0
+
         backer_name = backers_projects_urls[i][0]['name']
         project_urls = backers_projects_urls[i][1]
+        project_names = backers_projects_urls[i][2]
+
         output_data = []
 
         for project_url in project_urls:
+            #retrieve project name
+            project_name = project_names[project_name_index]
+
             driver = create_driver(webdriver,Options)
             driver.get(project_url)
             print(project_url)
@@ -463,30 +484,7 @@ try:
                 batch_no += 1
                 output_backer_project(output_data,backer_name,batch_remainder,batch_no)
 
-
-
-            '''
-            #discount skipped websites
-            num_website_left_to_scraped = len(project_url) - num_skip_website
-
-            #output data of backer after crawling 50 websites
-            if (no_of_website % batch_size) == 0:
-                batch_no += 1
-                output_backer_project(output_data,backer_name,batch_size,batch_no)
-
-            #output data of backer for last batch X websites
-            elif (num_website_left_to_scraped - no_of_website ) == (num_website_left_to_scraped % batch_size):
-                batch_no += 1
-                #last batch of remaining website
-                last_batch = len(project_url) % batch_size
-                output_backer_project(output_data,backer_name,last_batch,batch_no)
-
-            #cover cornercase for website < 50, e.g. 20
-            elif (num_website_left_to_scraped < batch_size) and no_of_website == num_website_left_to_scraped:
-                batch_no += 1
-                output_backer_project(output_data,backer_name,len(project_url),batch_no)
-            '''
-
+            project_name_index += 1
 
             #if no_of_website == 20:
             #    break

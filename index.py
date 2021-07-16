@@ -1,3 +1,7 @@
+"""
+This script performs web scraping of backer's bio as well as their invested projects
+It scrapes the data in batches of 30 and stores the output data in data directory
+"""
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
@@ -13,6 +17,8 @@ import pprint as pprint
 import re
 import json
 import sys
+import read_index_data as recrawlurl
+
 
 def retrieve_html(driver,BeautifulSoup):
     html = driver.page_source
@@ -48,6 +54,7 @@ def rotate_proxy2(webdriver,no_of_backers_urls):
     proxies = req_proxy.get_proxy_list() #this will create proxy list
     return proxies * no_of_backers_urls
 
+#randomise user agent to circumvent bot detection
 def rand_user_agent(random):
     user_agent_list = [
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15',
@@ -89,9 +96,14 @@ data_output = input("Batch_size and iteration_no, e.g 30_2: ")
 backer_urls = backer_urls[start_idx:end_idx]
 pprint.pprint(backer_urls)
 total_project_crawled = 0
+
+#recrawl missing urls
+miss_urls = recrawlurl.retrieve_miss_name_url()
+print("No. of missing url:",len(miss_urls))
 try:
     start_time = time.time()
-    for url in backer_urls:
+    #for url in backer_urls:
+    for url in miss_urls:
         #Use different proxy for each new url
         i = 0
         #improve chrome driver performance
@@ -188,6 +200,7 @@ try:
             backed = soup.find("span", class_="backed").text.strip()
             loc = soup.find("span", class_="location").text.strip()
             join = soup.find("span", class_="joined").text.strip()
+            print(name)
         except AttributeError:
             pass
 

@@ -1,15 +1,9 @@
 How to get started
 1.Start the virtual environment,  '. venv/bin/activate'
 2.Install the necessary packages, 'pip install -r requirements.txt'
-3.Specify start index, end index for backers_urls and output filename
+3.Specify start index, end index for backers_urls when script runs
 
 Data filename format
 -data_[batch size]_[iteration no]
--Modify this filename  in index file under output file to json
-
-Index of backers_urls that have been crawled
-0-20
-20-40
-40-70
 
 Total backers: 764

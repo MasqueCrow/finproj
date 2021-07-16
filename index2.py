@@ -375,6 +375,8 @@ try:
             except NoSuchElementException:
                 print("No. of comments cannot be found")
 
+            #Commented out code scrapes attempts to fully load webpage before
+            #attempting to scrape for comments
             '''
             #Load full page implementation
             SCROLL_PAUSE_TIME = random.randint(5,8)
@@ -486,7 +488,6 @@ try:
             driver.quit()
 
         #output_backer_project(output_data,backer_name)
-
 
         print("backers crawled:",str(num_backer_crawled))
         print("Num website skipped:", num_skip_website)

@@ -1,10 +1,10 @@
-Setup
-1.Start virtual environment on command prompt, '.venv/bin/activate'
-2.Install prequisite packages, 'pip install -r requirements.txt'
-3.Specify start and end index when script runs (i.e index.py, index2.py files)
+# Setup
+1. Start virtual environment on command prompt, `.venv/bin/activate`
+2. Install prequisite packages, `pip install -r requirements.txt`
+3. Specify start and end index when script runs (i.e index.py, index2.py files)
 *The start index and end index locates the positions of backer's list to crawl for data
 
-#File/Folder Brief Description
+# File/Folder Brief Description
 index.py - Scrapes for backer's bio and their invested projects (e.g. bio, websites, project title, project description, creator name, pledge amt)
 index2.py -Scrape detail information of backer's invested projects (e.g. Campaign's Story & Risk, Pledge info, Updates, no. of comments, comments content)
 backer_list.pickle - contains backer's url links which are used as input data for index.py file

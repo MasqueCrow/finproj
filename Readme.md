@@ -17,4 +17,4 @@
 
 # Script Information
 1. To start the script, specify the python version that you are using in your system followed by the script name, i.e `python3 index2.py` in the command prompt
-2.Specify the start and end index of unscraped backers in the backer's list in the prompt to scraped. Refer to manual log in ProjectProgress.txt which shows the index range of backers that have been scraped. E.g. Starting backer range: 30, Ending backer range: 50, this scrapes 20 backers from 30th to 49th position in the backer's list    
+2. Specify the start and end index of unscraped backers in the backer's list in the prompt to scraped. Refer to manual log in ProjectProgress.txt which shows the index range of backers that have been scraped. E.g. Starting backer range: 30, Ending backer range: 50, this scrapes 20 backers from 30th to 49th position in the backer's list    

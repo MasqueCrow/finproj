@@ -1,6 +1,6 @@
 # Setup
 1. Start virtual environment on command prompt, `. venv/bin/activate`
-2. Install prequisite packages, `pip install -r requirements.txt`
+2. Install pre-requisite packages, `pip install -r requirements.txt`
 3. Specify start and end index when script runs (i.e index.py, index2.py files)
 *The start index and end index locates the positions of backer's list to crawl for data
 
